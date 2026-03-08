@@ -1,11 +1,12 @@
 # Return & Warranty Autopilot - Phase 1
 
-Phase 1 includes:
+Current MVP includes:
 
 - Next.js App Router scaffold with TypeScript and TailwindCSS
 - Prisma schema for PostgreSQL
 - Seed/demo purchase data
 - Dashboard + Purchases UI powered by seeded data
+- Gmail OAuth + sync API with demo fallback mode
 - Basic API route handlers
 
 ## Tech Stack
@@ -55,6 +56,15 @@ Visit:
 - `/dashboard`
 - `/purchases`
 - `/purchases/[id]`
+- `/connect/gmail`
+
+## Gmail Demo Mode
+
+If `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_SECRET` is missing, Gmail runs in demo mode:
+
+- Connect action will mark a demo Gmail account
+- Sync action will load sample emails
+- HTML email bodies are normalized to plain text for downstream extraction
 
 ## Scripts
 

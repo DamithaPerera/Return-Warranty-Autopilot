@@ -1,4 +1,11 @@
-import { PrismaClient, PurchaseSource, PurchaseStatus } from "@prisma/client";
+import {
+  EmailClassification,
+  EmailProvider,
+  ExtractionStatus,
+  PrismaClient,
+  PurchaseSource,
+  PurchaseStatus
+} from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -21,6 +28,7 @@ async function main() {
   await prisma.purchaseItem.deleteMany();
   await prisma.purchase.deleteMany();
   await prisma.emailMessage.deleteMany();
+  await prisma.emailAccount.deleteMany();
   await prisma.user.deleteMany({ where: { email } });
 
   const user = await prisma.user.create({
@@ -31,6 +39,33 @@ async function main() {
   });
 
   const now = new Date();
+
+  await prisma.emailAccount.create({
+    data: {
+      userId: user.id,
+      provider: EmailProvider.GMAIL,
+      providerAccountId: "demo-gmail-account",
+      accessToken: "demo-access-token",
+      refreshToken: "demo-refresh-token",
+      scopes: "https://www.googleapis.com/auth/gmail.readonly"
+    }
+  });
+
+  await prisma.emailMessage.create({
+    data: {
+      userId: user.id,
+      gmailMessageId: "demo-msg-001",
+      threadId: "demo-thread-001",
+      subject: "Your Amazon.com order has shipped",
+      fromEmail: "auto-confirm@amazon.com",
+      snippet: "Your package is on the way.",
+      receivedAt: addDays(now, -3),
+      rawText: "Your package is on the way. Thanks for shopping with us.",
+      htmlBody: "<p>Your package is on the way.</p>",
+      classification: EmailClassification.SHIPPING,
+      extractionStatus: ExtractionStatus.PROCESSED
+    }
+  });
 
   const amazonDelivery = addDays(now, -25);
   const appleDelivery = addDays(now, -50);

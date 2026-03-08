@@ -25,6 +25,17 @@ enum ExtractionStatus {
   FAILED
 }
 
+enum EmailProvider {
+  GMAIL
+}
+
+enum EmailClassification {
+  RECEIPT
+  WARRANTY
+  SHIPPING
+  OTHER
+}
+
 enum ClaimType {
   RETURN_REFUND
   WARRANTY_REPAIR
@@ -43,24 +54,45 @@ model User {
   name            String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  emailAccounts   EmailAccount[]
   emailMessages   EmailMessage[]
   purchases       Purchase[]
   generatedClaims GeneratedClaim[]
 }
 
+model EmailAccount {
+  id                String        @id @default(cuid())
+  userId            String
+  provider          EmailProvider
+  providerAccountId String
+  accessToken       String
+  refreshToken      String?
+  tokenExpiry       DateTime?
+  scopes            String
+  createdAt         DateTime      @default(now())
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId, provider])
+}
+
 model EmailMessage {
-  id               String           @id @default(cuid())
-  userId           String
-  providerMessageId String?
-  subject          String
-  fromEmail        String?
-  receivedAt       DateTime
-  rawSnippet       String?
-  extractionStatus ExtractionStatus @default(PENDING)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  purchases        Purchase[]
+  id              String              @id @default(cuid())
+  userId          String
+  gmailMessageId  String              @unique
+  threadId        String
+  subject         String
+  fromEmail       String?
+  snippet         String?
+  receivedAt      DateTime
+  rawText         String?
+  htmlBody        String?
+  classification  EmailClassification @default(OTHER)
+  extractionStatus ExtractionStatus   @default(PENDING)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purchases       Purchase[]
 
   @@index([userId, receivedAt])
 }

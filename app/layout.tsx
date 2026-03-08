@@ -26,6 +26,9 @@ export default function RootLayout({
                 <Link href="/purchases" className="hover:text-slate-900">
                   Purchases
                 </Link>
+                <Link href="/connect/gmail" className="hover:text-slate-900">
+                  Gmail
+                </Link>
               </nav>
             </div>
           </header>
