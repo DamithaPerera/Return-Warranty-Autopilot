@@ -16,6 +16,10 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 
+# sqlite db
+/prisma/dev.db
+/prisma/dev.db-*
+
 # misc
 .DS_Store
 *.tsbuildinfo

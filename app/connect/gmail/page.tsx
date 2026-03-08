@@ -1,4 +1,5 @@
 import { GmailActions } from "@/app/connect/gmail/actions";
+import { SyncedEmailsTable } from "@/components/synced-emails-table";
 import { prisma } from "@/lib/db/prisma";
 import { getGmailStatus } from "@/lib/gmail/service";
 
@@ -10,6 +11,13 @@ export default async function ConnectGmailPage() {
     orderBy: { receivedAt: "desc" },
     take: 10
   });
+  const tableEmails = messages.map((message) => ({
+    id: message.id,
+    subject: message.subject,
+    fromEmail: message.fromEmail,
+    classification: message.classification,
+    receivedAt: message.receivedAt.toISOString()
+  }));
 
   return (
     <section className="space-y-6">
@@ -41,45 +49,10 @@ export default async function ConnectGmailPage() {
         </div>
       </article>
 
-      <article className="glass-card overflow-hidden rounded-2xl">
-        <div className="border-b border-slate-200 bg-gradient-to-r from-cyan-50 to-blue-50 px-4 py-3">
-          <h2 className="text-sm font-semibold text-slate-900">Recent Synced Emails</h2>
-        </div>
-        <table className="min-w-full divide-y divide-slate-200">
-          <thead className="bg-slate-50">
-            <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="px-4 py-3">Subject</th>
-              <th className="px-4 py-3">From</th>
-              <th className="px-4 py-3">Classification</th>
-              <th className="px-4 py-3">Received</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 text-sm">
-            {messages.length === 0 ? (
-              <tr>
-                <td className="px-4 py-4 text-slate-500" colSpan={4}>
-                  No emails synced yet. Use Connect Gmail then Sync Emails.
-                </td>
-              </tr>
-            ) : (
-              messages.map((message) => (
-                <tr key={message.id}>
-                  <td className="px-4 py-3 text-slate-800">{message.subject}</td>
-                  <td className="px-4 py-3 text-slate-600">{message.fromEmail ?? "-"}</td>
-                  <td className="px-4 py-3 text-slate-600">{message.classification}</td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {new Intl.DateTimeFormat("en-US", {
-                      month: "short",
-                      day: "2-digit",
-                      year: "numeric"
-                    }).format(message.receivedAt)}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </article>
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold text-slate-900">Recent Synced Emails</h2>
+        <SyncedEmailsTable emails={tableEmails} />
+      </div>
     </section>
   );
 }
