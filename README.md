@@ -1,15 +1,36 @@
-# Return & Warranty Autopilot - Phase 1
+# Return & Warranty Autopilot
 
-Current MVP includes:
+![Return & Warranty Autopilot Banner](docs/screenshots/hero-banner.png)
 
-- Next.js App Router scaffold with TypeScript and TailwindCSS
-- Prisma schema for SQLite (local-first)
-- Seed/demo purchase data
-- Dashboard + Purchases UI powered by seeded data
-- Gmail OAuth + sync API with demo fallback mode
-- Purchase email classification + AI extraction pipeline (with mock fallback)
-- Deadline recalculation engine + claim generator (AI/template fallback)
-- Basic API route handlers
+AI assistant to track purchase receipts, return windows, and warranty deadlines, then generate claim emails fast.
+
+## Overview
+
+Return & Warranty Autopilot helps users:
+
+- Sync purchase-related emails (Gmail with demo fallback)
+- Classify and extract structured order details
+- Track return and warranty deadlines automatically
+- Generate return/refund/warranty email drafts
+- Run completely local using SQLite for demos/hackathons
+
+## Core Features
+
+- Landing page for product onboarding
+- Dashboard with key deadline metrics
+- Purchases table with search and pagination
+- Purchase detail page with claim generator
+- Gmail sync focused on purchase-like emails only
+- Rule-based email classification:
+  - `purchase_confirmation`
+  - `shipping_update`
+  - `invoice`
+  - `subscription`
+  - `promotion`
+  - `other`
+- OpenAI extraction with safe fallback:
+  - mock extraction for demo/known emails
+  - heuristic extraction on quota/billing/auth/network failures
 
 ## Tech Stack
 
@@ -17,9 +38,9 @@ Current MVP includes:
 - TypeScript
 - TailwindCSS
 - Prisma ORM
-- SQLite (local file)
+- SQLite (`prisma/dev.db`)
 
-## Quick Start
+## Local Setup
 
 1. Install dependencies:
 
@@ -27,19 +48,19 @@ Current MVP includes:
 npm install
 ```
 
-2. Create env file:
+2. Create environment file:
 
 ```bash
 copy .env.example .env
 ```
 
-3. Ensure `.env` has:
+3. Ensure SQLite path is set:
 
 ```bash
 DATABASE_URL="file:./dev.db"
 ```
 
-4. Run Prisma migration:
+4. Run migrations:
 
 ```bash
 npx prisma migrate dev
@@ -57,80 +78,58 @@ npm run seed
 npm run dev
 ```
 
-Visit:
+## Routes
 
-- `/dashboard`
-- `/purchases`
-- `/purchases/[id]`
-- `/connect/gmail`
+- `/` - Landing page
+- `/dashboard` - KPI dashboard + recent purchases
+- `/purchases` - Purchases list
+- `/purchases/[id]` - Purchase details + claim generation
+- `/connect/gmail` - Gmail connection and sync view
 
-## Gmail Demo Mode
+## Gmail Sync Behavior
 
-If `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_SECRET` is missing, Gmail runs in demo mode:
+Sync is intentionally purchase-focused, not a general inbox sync.
 
-- Connect action will mark a demo Gmail account
-- Sync action will load sample emails
-- HTML email bodies are normalized to plain text for downstream extraction
-
-## Gmail Filtering Scope
-
-Gmail sync is intentionally purchase-focused, not a general inbox sync.
-
-- Query targets purchase-like emails using Gmail search such as:
+- Targets queries such as:
   - `category:purchases`
   - `subject:(order OR receipt OR invoice OR shipped OR delivered)`
-- Promotional/newsletter-like content is de-prioritized/excluded where possible.
-- The app is not optimized for non-receipt recurring subscriptions (for example generic Netflix/Spotify billing digests or newsletters) unless they are true purchase receipts.
+- Tries to exclude promotions/newsletters where possible
+- Non-purchase categories are not sent to purchase extraction
 
-## Extraction Pipeline
+## OpenAI Fallback Behavior
 
-When `/api/gmail/sync` runs, the app executes:
+If OpenAI is unavailable (`insufficient_quota`, billing/auth/network failures):
 
-1. Email sync
-2. Rule-based classification:
-   - `purchase_confirmation`
-   - `shipping_update`
-   - `invoice`
-   - `subscription`
-   - `promotion`
-   - `other`
-3. Only `purchase_confirmation`, `shipping_update`, and `invoice` continue to extraction.
-4. Purchase extraction:
-   - OpenAI when available
-   - fallback to mock/heuristic extraction when OpenAI is unavailable (quota, billing, auth, or network failures)
-5. Persistence into `Purchase` and `PurchaseItem`
+- Sync does not fail
+- Extraction falls back to mock or heuristic mode
+- UI reports that fallback extraction was used
 
-If OpenAI extraction is unavailable, sync still succeeds and the UI reports that fallback extraction was used.
+## Demo Mode
 
-## Phase 4 APIs
+Works without Gmail credentials and without OpenAI key.
 
+- Use **Load Demo Data** from dashboard
+- Sync emails from `/connect/gmail` in demo mode
+- Generate claim emails from purchase detail page
+
+Demo dataset includes:
+
+- Demo purchases
+- Demo synced emails
+- Demo extraction records
+- Demo claims
+
+## API Endpoints
+
+- `GET /api/gmail/auth/start`
+- `GET /api/gmail/auth/callback`
+- `POST /api/gmail/sync`
+- `GET /api/gmail/status`
+- `POST /api/demo/load`
 - `POST /api/purchases/[id]/recalculate`
 - `POST /api/claims/generate`
 
-## Demo Instructions
-
-Use this flow for hackathon demos even when Gmail and OpenAI are not configured.
-
-1. Set only `DATABASE_URL` in `.env`.
-2. Run migrations and start app:
-   - `npx prisma migrate dev`
-   - `npm run dev`
-3. Open `/dashboard`:
-   - Demo data auto-loads if there are no purchases.
-   - You can re-load/reset demo content anytime with `Load Demo Data`.
-4. Open `/connect/gmail` and click `Sync Emails`:
-   - Works in demo mode without Gmail credentials.
-5. Open any purchase and click `Generate Claim`:
-   - Falls back to template generation when `OPENAI_API_KEY` is missing.
-
-Demo includes:
-
-- Demo purchases
-- Demo email dataset
-- Demo extraction results (merchant/order/item fields + confidence)
-- Demo generated claims
-
-### Screenshots
+## Screenshots
 
 ![Dashboard Demo](docs/screenshots/dashboard-demo.svg)
 ![Gmail Demo](docs/screenshots/gmail-demo.svg)
@@ -138,9 +137,14 @@ Demo includes:
 
 ## Scripts
 
-- `npm run dev` - Start development server
+- `npm run dev` - Start dev server
 - `npm run build` - Production build
 - `npm run start` - Start production server
 - `npm run seed` - Seed demo data
 - `npm run db:migrate -- --name <name>` - Create/apply migration
-- `npm run db:generate` - Generate Prisma client
+- `npm run db:generate` - Generate Prisma Client
+
+## Notes
+
+- SQLite DB path: `prisma/dev.db`
+- If build fails with `.next/trace` permission error, stop any running Next.js process and retry.
