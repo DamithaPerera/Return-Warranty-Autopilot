@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PurchaseSource {
+  EMAIL_RECEIPT
+  MANUAL_ENTRY
+}
+
+enum PurchaseStatus {
+  ACTIVE
+  RETURN_EXPIRED
+  WARRANTY_EXPIRED
+  CLAIM_GENERATED
+}
+
+enum ExtractionStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+enum ClaimType {
+  RETURN_REFUND
+  WARRANTY_REPAIR
+  WARRANTY_REPLACEMENT
+}
+
+enum ClaimStatus {
+  DRAFT
+  READY
+  SENT
+}
+
+model User {
+  id              String           @id @default(cuid())
+  email           String           @unique
+  name            String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  emailMessages   EmailMessage[]
+  purchases       Purchase[]
+  generatedClaims GeneratedClaim[]
+}
+
+model EmailMessage {
+  id               String           @id @default(cuid())
+  userId           String
+  providerMessageId String?
+  subject          String
+  fromEmail        String?
+  receivedAt       DateTime
+  rawSnippet       String?
+  extractionStatus ExtractionStatus @default(PENDING)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purchases        Purchase[]
+
+  @@index([userId, receivedAt])
+}
+
+model Purchase {
+  id                  String         @id @default(cuid())
+  userId              String
+  emailMessageId      String?
+  merchantName        String
+  orderNumber         String
+  orderDate           DateTime
+  deliveryDate        DateTime?
+  currency            String
+  totalAmount         Decimal        @db.Decimal(10, 2)
+  purchaseSource      PurchaseSource
+  extractedConfidence Float
+  status              PurchaseStatus @default(ACTIVE)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailMessage        EmailMessage?  @relation(fields: [emailMessageId], references: [id], onDelete: SetNull)
+  items               PurchaseItem[]
+  generatedClaims     GeneratedClaim[]
+
+  @@index([userId, orderDate])
+  @@index([merchantName])
+}
+
+model PurchaseItem {
+  id               String   @id @default(cuid())
+  purchaseId       String
+  productName      String
+  quantity         Int      @default(1)
+  unitPrice        Decimal  @db.Decimal(10, 2)
+  warrantyMonths   Int?
+  returnWindowDays Int?
+  returnDeadline   DateTime?
+  warrantyDeadline DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  purchase         Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseId])
+  @@index([returnDeadline])
+  @@index([warrantyDeadline])
+}
+
+model GeneratedClaim {
+  id         String      @id @default(cuid())
+  userId     String
+  purchaseId String
+  claimType  ClaimType
+  channel    String      @default("email")
+  subject    String
+  body       String
+  status     ClaimStatus @default(DRAFT)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purchase   Purchase    @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purchaseId])
+}
