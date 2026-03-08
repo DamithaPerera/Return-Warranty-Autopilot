@@ -115,13 +115,27 @@ export function ClaimGenerator({ purchaseId, initialClaim }: ClaimGeneratorProps
               className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-cyan-500 focus:outline-none"
             />
           </label>
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          >
-            Copy to clipboard
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Copy to clipboard
+            </button>
+            <span className="group relative inline-flex">
+              <button
+                type="button"
+                disabled
+                className="cursor-not-allowed rounded-full border border-slate-200 bg-slate-100 px-5 py-2 text-sm font-semibold text-slate-500"
+              >
+                Send Email
+              </button>
+              <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white opacity-0 shadow transition group-hover:opacity-100">
+                Coming soon
+              </span>
+            </span>
+          </div>
         </div>
       ) : null}
     </article>
