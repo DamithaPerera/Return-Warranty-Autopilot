@@ -10,9 +10,30 @@ type BuildTemplateInput = {
 };
 
 function toneLine(tone: string) {
-  if (tone.toLowerCase().includes("firm")) return "I appreciate your prompt action on this request.";
-  if (tone.toLowerCase().includes("friendly")) return "Thanks in advance for your help.";
+  const normalized = tone.toLowerCase();
+  if (normalized.includes("angry") || normalized.includes("urgent")) {
+    return "This issue has caused significant inconvenience. I expect a prompt resolution.";
+  }
+  if (normalized.includes("firm")) {
+    return "I appreciate your prompt action on this request.";
+  }
+  if (normalized.includes("friendly")) {
+    return "Thanks in advance for your help.";
+  }
+  if (normalized.includes("polite")) {
+    return "I would greatly appreciate your assistance with this request.";
+  }
   return "Please let me know if you need any additional details.";
+}
+
+function subjectPrefix(claimType: ClaimTypeInput, tone: string) {
+  const normalized = tone.toLowerCase();
+  if (normalized.includes("angry") || normalized.includes("urgent")) {
+    return claimType === "refund_request" ? "Urgent Refund Request" : "Urgent Claim Request";
+  }
+  if (claimType === "warranty_claim") return "Warranty Claim";
+  if (claimType === "refund_request") return "Refund Request";
+  return "Return Request";
 }
 
 export function buildTemplatedClaim(input: BuildTemplateInput) {
@@ -21,7 +42,7 @@ export function buildTemplatedClaim(input: BuildTemplateInput) {
 
   if (input.claimType === "warranty_claim") {
     return {
-      subject: `Warranty Claim - Order ${input.orderNumber}`,
+      subject: `${subjectPrefix(input.claimType, input.tone)} - Order ${input.orderNumber}`,
       body: `Hello ${support},
 
 I am contacting you to submit a warranty claim for order ${input.orderNumber} from ${input.merchantName}.
@@ -37,7 +58,7 @@ Customer`
 
   if (input.claimType === "refund_request") {
     return {
-      subject: `Refund Request - Order ${input.orderNumber}`,
+      subject: `${subjectPrefix(input.claimType, input.tone)} - Order ${input.orderNumber}`,
       body: `Hello ${support},
 
 I would like to request a refund for order ${input.orderNumber} from ${input.merchantName}.
@@ -52,7 +73,7 @@ Customer`
   }
 
   return {
-    subject: `Return Request - Order ${input.orderNumber}`,
+    subject: `${subjectPrefix(input.claimType, input.tone)} - Order ${input.orderNumber}`,
     body: `Hello ${support},
 
 I would like to initiate a return for order ${input.orderNumber} from ${input.merchantName}.
