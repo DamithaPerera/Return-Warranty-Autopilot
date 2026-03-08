@@ -17,10 +17,13 @@ export default function RootLayout({
         <div className="app-shell min-h-screen">
           <header className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/80 backdrop-blur">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-              <Link href="/dashboard" className="text-lg font-bold tracking-tight text-slate-900">
+              <Link href="/" className="text-lg font-bold tracking-tight text-slate-900">
                 Return & Warranty <span className="text-cyan-700">Autopilot</span>
               </Link>
               <nav className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <Link href="/" className="rounded-full px-3 py-1.5 hover:bg-cyan-50 hover:text-cyan-800">
+                  Home
+                </Link>
                 <Link href="/dashboard" className="rounded-full px-3 py-1.5 hover:bg-cyan-50 hover:text-cyan-800">
                   Dashboard
                 </Link>
