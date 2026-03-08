@@ -1,7 +1,7 @@
 import { PurchaseSource, PurchaseStatus } from "@prisma/client";
 import { extractPurchaseData } from "@/lib/ai/extractor";
 import { prisma } from "@/lib/db/prisma";
-import { classifyPurchaseEmail } from "@/lib/parser/classifier";
+import { classifyPurchaseEmail, shouldExtractPurchaseEmail } from "@/lib/parser/classifier";
 
 function parseDate(value: string | null): Date | null {
   if (!value) return null;
@@ -33,6 +33,8 @@ export async function runPurchaseExtractionPipeline(userId: string, limit = 100)
   let extractedCount = 0;
   let savedPurchaseCount = 0;
   let mockCount = 0;
+  let heuristicCount = 0;
+  let aiFallbackUsed = false;
 
   for (const email of emails) {
     const category = classifyPurchaseEmail(email.subject, email.fromEmail ?? "", email.snippet ?? "");
@@ -43,7 +45,7 @@ export async function runPurchaseExtractionPipeline(userId: string, limit = 100)
       data: { classification: category }
     });
 
-    if (category === "other") continue;
+    if (!shouldExtractPurchaseEmail(category)) continue;
 
     const extraction = await extractPurchaseData({
       subject: email.subject,
@@ -55,6 +57,12 @@ export async function runPurchaseExtractionPipeline(userId: string, limit = 100)
 
     if (extraction.mode === "mock") {
       mockCount += 1;
+      aiFallbackUsed = true;
+    }
+
+    if (extraction.mode === "heuristic") {
+      heuristicCount += 1;
+      aiFallbackUsed = true;
     }
 
     extractedCount += 1;
@@ -127,6 +135,11 @@ export async function runPurchaseExtractionPipeline(userId: string, limit = 100)
     classifiedCount,
     extractedCount,
     savedPurchaseCount,
-    mockExtractions: mockCount
+    mockExtractions: mockCount,
+    heuristicExtractions: heuristicCount,
+    aiFallbackUsed,
+    fallbackMessage: aiFallbackUsed
+      ? "AI extraction unavailable for some emails. Demo/manual extraction fallback was used."
+      : null
   };
 }

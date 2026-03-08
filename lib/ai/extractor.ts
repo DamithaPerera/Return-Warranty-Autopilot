@@ -9,6 +9,8 @@ type EmailForExtraction = {
   htmlBody: string;
 };
 
+type ExtractionMode = "mock" | "openai" | "heuristic";
+
 function normalizeExtracted(data: Partial<ExtractedPurchase>): ExtractedPurchase {
   return {
     merchant_name: data.merchant_name ?? "Unknown Merchant",
@@ -132,6 +134,84 @@ function mockExtract(input: EmailForExtraction): ExtractedPurchase {
   });
 }
 
+function inferMerchantName(fromEmail: string, subject: string) {
+  const from = fromEmail.toLowerCase();
+  if (from.includes("amazon")) return "Amazon";
+  if (from.includes("apple")) return "Apple";
+  if (from.includes("shopify") || from.includes("urbanthread")) return "Shopify Store - UrbanThread";
+
+  const domain = from.split("@")[1] ?? "";
+  if (domain) {
+    return domain.split(".")[0].replace(/[-_]/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  const subjectMerchant = subject.match(/\bfrom\s+([a-z0-9 &'-]+)/i)?.[1];
+  return subjectMerchant ? subjectMerchant.trim() : "Unknown Merchant";
+}
+
+function heuristicExtract(input: EmailForExtraction): ExtractedPurchase {
+  const text = `${input.subject}\n${input.snippet}\n${input.rawText}`;
+  const normalized = text.toLowerCase();
+
+  const orderMatch =
+    text.match(/(?:order|invoice|receipt)\s*(?:#|number|no\.?)?\s*([A-Z0-9-]{5,})/i) ??
+    text.match(/\b([A-Z]{2,}-\d{3,}[-\d]*)\b/);
+  const totalMatch = text.match(/(?:total|amount)\s*(?:due|paid)?[:\s$]*([0-9]+(?:\.[0-9]{1,2})?)/i);
+  const currencyMatch = text.match(/\b(USD|EUR|GBP|LKR|CAD|AUD)\b/i);
+  const dateMatch = text.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
+  const supportMatch = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi);
+
+  const supportEmail =
+    supportMatch?.find((email) => email.toLowerCase().includes("support") || email.toLowerCase().includes("help")) ??
+    supportMatch?.[0] ??
+    null;
+
+  const itemHint =
+    text.match(/(?:item|product)s?:\s*([^\n.]+)/i)?.[1] ?? text.match(/(?:purchased|ordered)\s+([^\n.]+)/i)?.[1] ?? "";
+
+  return normalizeExtracted({
+    merchant_name: inferMerchantName(input.fromEmail, input.subject),
+    order_number: orderMatch?.[1] ?? `UNPARSED-${Date.now()}`,
+    order_date: dateMatch?.[1] ?? null,
+    delivery_date: null,
+    currency: currencyMatch?.[1]?.toUpperCase() ?? "USD",
+    total_amount: Number(totalMatch?.[1] ?? 0),
+    support_email: supportEmail,
+    items: itemHint
+      ? [
+          {
+            product_name: itemHint.trim(),
+            quantity: 1,
+            unit_price: Number(totalMatch?.[1] ?? 0),
+            return_window_days: null,
+            warranty_months: null
+          }
+        ]
+      : [],
+    confidence: normalized.includes("order") || normalized.includes("receipt") || normalized.includes("invoice") ? 0.55 : 0.4
+  });
+}
+
+function isKnownDemoEmail(input: EmailForExtraction) {
+  const text = `${input.subject} ${input.snippet} ${input.rawText}`.toLowerCase();
+  return text.includes("amazon") || text.includes("apple") || text.includes("urbanthread") || text.includes("shopify");
+}
+
+function shouldFallbackToHeuristic(errorText: string) {
+  const text = errorText.toLowerCase();
+  return (
+    text.includes("insufficient_quota") ||
+    text.includes("quota") ||
+    text.includes("billing") ||
+    text.includes("authentication") ||
+    text.includes("invalid_api_key") ||
+    text.includes("network") ||
+    text.includes("fetch failed") ||
+    text.includes("timeout") ||
+    text.includes("econn")
+  );
+}
+
 function parseJsonFromContent(content: string) {
   const trimmed = content.trim();
   const start = trimmed.indexOf("{");
@@ -143,95 +223,107 @@ function parseJsonFromContent(content: string) {
 }
 
 export async function extractPurchaseData(input: EmailForExtraction): Promise<{
-  mode: "mock" | "openai";
+  mode: ExtractionMode;
   purchase: ExtractedPurchase;
+  fallbackReason?: string;
 }> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return { mode: "mock", purchase: mockExtract(input) };
+    return { mode: "mock", purchase: mockExtract(input), fallbackReason: "OPENAI_API_KEY missing" };
   }
 
   const model = process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
   const prompt = buildPurchaseExtractionPrompt(input);
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model,
-      input: prompt,
-      text: {
-        format: {
-          type: "json_schema",
-          name: "purchase_extraction",
-          schema: {
-            type: "object",
-            additionalProperties: false,
-            required: [
-              "merchant_name",
-              "order_number",
-              "order_date",
-              "delivery_date",
-              "currency",
-              "total_amount",
-              "support_email",
-              "items",
-              "confidence"
-            ],
-            properties: {
-              merchant_name: { type: "string" },
-              order_number: { type: "string" },
-              order_date: { type: ["string", "null"] },
-              delivery_date: { type: ["string", "null"] },
-              currency: { type: "string" },
-              total_amount: { type: "number" },
-              support_email: { type: ["string", "null"] },
-              confidence: { type: "number" },
-              items: {
-                type: "array",
+  try {
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        input: prompt,
+        text: {
+          format: {
+            type: "json_schema",
+            name: "purchase_extraction",
+            schema: {
+              type: "object",
+              additionalProperties: false,
+              required: [
+                "merchant_name",
+                "order_number",
+                "order_date",
+                "delivery_date",
+                "currency",
+                "total_amount",
+                "support_email",
+                "items",
+                "confidence"
+              ],
+              properties: {
+                merchant_name: { type: "string" },
+                order_number: { type: "string" },
+                order_date: { type: ["string", "null"] },
+                delivery_date: { type: ["string", "null"] },
+                currency: { type: "string" },
+                total_amount: { type: "number" },
+                support_email: { type: ["string", "null"] },
+                confidence: { type: "number" },
                 items: {
-                  type: "object",
-                  additionalProperties: false,
-                  required: [
-                    "product_name",
-                    "quantity",
-                    "unit_price",
-                    "return_window_days",
-                    "warranty_months"
-                  ],
-                  properties: {
-                    product_name: { type: "string" },
-                    quantity: { type: "number" },
-                    unit_price: { type: "number" },
-                    return_window_days: { type: ["number", "null"] },
-                    warranty_months: { type: ["number", "null"] }
+                  type: "array",
+                  items: {
+                    type: "object",
+                    additionalProperties: false,
+                    required: [
+                      "product_name",
+                      "quantity",
+                      "unit_price",
+                      "return_window_days",
+                      "warranty_months"
+                    ],
+                    properties: {
+                      product_name: { type: "string" },
+                      quantity: { type: "number" },
+                      unit_price: { type: "number" },
+                      return_window_days: { type: ["number", "null"] },
+                      warranty_months: { type: ["number", "null"] }
+                    }
                   }
                 }
               }
-            }
-          },
-          strict: true
+            },
+            strict: true
+          }
         }
-      }
-    })
-  });
+      })
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`OpenAI extraction failed: ${errorText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenAI extraction failed: ${errorText}`);
+    }
+
+    const payload = (await response.json()) as {
+      output_text?: string;
+    };
+
+    if (!payload.output_text) {
+      throw new Error("OpenAI extraction returned no output_text.");
+    }
+
+    const parsed = parseJsonFromContent(payload.output_text);
+    return { mode: "openai", purchase: normalizeExtracted(parsed) };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "OpenAI extraction failed";
+    if (isKnownDemoEmail(input)) {
+      return { mode: "mock", purchase: mockExtract(input), fallbackReason: message };
+    }
+    if (shouldFallbackToHeuristic(message)) {
+      return { mode: "heuristic", purchase: heuristicExtract(input), fallbackReason: message };
+    }
+    return { mode: "heuristic", purchase: heuristicExtract(input), fallbackReason: message };
   }
-
-  const payload = (await response.json()) as {
-    output_text?: string;
-  };
-
-  if (!payload.output_text) {
-    throw new Error("OpenAI extraction returned no output_text.");
-  }
-
-  const parsed = parseJsonFromContent(payload.output_text);
-  return { mode: "openai", purchase: normalizeExtracted(parsed) };
 }

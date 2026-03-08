@@ -72,6 +72,16 @@ If `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_SECRET` is missing, Gmail runs in demo m
 - Sync action will load sample emails
 - HTML email bodies are normalized to plain text for downstream extraction
 
+## Gmail Filtering Scope
+
+Gmail sync is intentionally purchase-focused, not a general inbox sync.
+
+- Query targets purchase-like emails using Gmail search such as:
+  - `category:purchases`
+  - `subject:(order OR receipt OR invoice OR shipped OR delivered)`
+- Promotional/newsletter-like content is de-prioritized/excluded where possible.
+- The app is not optimized for non-receipt recurring subscriptions (for example generic Netflix/Spotify billing digests or newsletters) unless they are true purchase receipts.
+
 ## Extraction Pipeline
 
 When `/api/gmail/sync` runs, the app executes:
@@ -81,9 +91,16 @@ When `/api/gmail/sync` runs, the app executes:
    - `purchase_confirmation`
    - `shipping_update`
    - `invoice`
+   - `subscription`
+   - `promotion`
    - `other`
-3. Purchase extraction (OpenAI when `OPENAI_API_KEY` exists, mock extraction otherwise)
-4. Persistence into `Purchase` and `PurchaseItem`
+3. Only `purchase_confirmation`, `shipping_update`, and `invoice` continue to extraction.
+4. Purchase extraction:
+   - OpenAI when available
+   - fallback to mock/heuristic extraction when OpenAI is unavailable (quota, billing, auth, or network failures)
+5. Persistence into `Purchase` and `PurchaseItem`
+
+If OpenAI extraction is unavailable, sync still succeeds and the UI reports that fallback extraction was used.
 
 ## Phase 4 APIs
 

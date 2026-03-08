@@ -8,6 +8,7 @@ import {
   isGmailDemoMode
 } from "@/lib/gmail/config";
 import { demoEmails } from "@/lib/gmail/demo";
+import { buildPurchaseFocusedQuery, isLikelyPurchaseEmail } from "@/lib/gmail/filter";
 import { htmlToPlainText } from "@/lib/gmail/html";
 import { classifyPurchaseEmail } from "@/lib/parser/classifier";
 
@@ -266,8 +267,9 @@ async function resolveAccessToken(account: {
 }
 
 async function fetchRecentGmailEmails(accessToken: string, maxResults = 100) {
+  const query = buildPurchaseFocusedQuery();
   const listResponse = await fetch(
-    `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${maxResults}`,
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=${maxResults}&q=${encodeURIComponent(query)}`,
     {
       headers: { Authorization: `Bearer ${accessToken}` }
     }
@@ -380,7 +382,7 @@ export async function syncGmailEmails(limit = 100) {
       storedCount += 1;
     }
 
-    return { mode: "demo" as const, fetchedCount: storedCount, storedCount };
+    return { mode: "demo" as const, fetchedCount: storedCount, storedCount, ignoredCount: 0 };
   }
 
   const account = await prisma.emailAccount.findFirst({
@@ -396,12 +398,17 @@ export async function syncGmailEmails(limit = 100) {
   const messages = await fetchRecentGmailEmails(accessToken, Math.min(limit, 100));
 
   let storedCount = 0;
+  let ignoredCount = 0;
   for (const message of messages) {
     const subject = readHeader(message, "Subject") || "(No Subject)";
     const fromEmail = readHeader(message, "From") || "";
     const { htmlBody, rawText } = extractBodies(message);
     const snippet = message.snippet ?? "";
     const receivedAt = message.internalDate ? new Date(Number(message.internalDate)) : new Date();
+    if (!isLikelyPurchaseEmail(subject, fromEmail, snippet)) {
+      ignoredCount += 1;
+      continue;
+    }
 
     await prisma.emailMessage.upsert({
       where: { gmailMessageId: message.id },
@@ -429,7 +436,7 @@ export async function syncGmailEmails(limit = 100) {
     storedCount += 1;
   }
 
-  return { mode: "oauth" as const, fetchedCount: messages.length, storedCount };
+  return { mode: "oauth" as const, fetchedCount: messages.length, storedCount, ignoredCount };
 }
 
 export async function getGmailStatus() {

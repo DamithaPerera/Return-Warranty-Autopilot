@@ -13,6 +13,7 @@ export function GmailActions() {
       const response = await fetch("/api/gmail/sync", { method: "POST" });
       const data = (await response.json()) as {
         storedCount?: number;
+        ignoredCount?: number;
         mode?: string;
         error?: string;
         extraction?: {
@@ -20,6 +21,9 @@ export function GmailActions() {
           extractedCount: number;
           savedPurchaseCount: number;
           mockExtractions: number;
+          heuristicExtractions: number;
+          aiFallbackUsed: boolean;
+          fallbackMessage: string | null;
         } | null;
       };
       if (!response.ok) {
@@ -29,7 +33,16 @@ export function GmailActions() {
       const extractionSummary = data.extraction
         ? ` Classified ${data.extraction.classifiedCount}, extracted ${data.extraction.extractedCount}, saved ${data.extraction.savedPurchaseCount} purchases.`
         : "";
-      setResult(`Synced ${data.storedCount ?? 0} emails (${data.mode ?? "unknown"} mode).${extractionSummary}`);
+      const filteredSummary =
+        typeof data.ignoredCount === "number" && data.ignoredCount > 0
+          ? ` Ignored ${data.ignoredCount} non-purchase emails.`
+          : "";
+      const fallbackSummary = data.extraction?.aiFallbackUsed
+        ? ` ${data.extraction.fallbackMessage ?? "AI unavailable; fallback extraction used."}`
+        : "";
+      setResult(
+        `Synced ${data.storedCount ?? 0} emails (${data.mode ?? "unknown"} mode).${filteredSummary}${extractionSummary}${fallbackSummary}`
+      );
     } catch {
       setResult("Sync failed due to network or server error.");
     } finally {
