@@ -3,7 +3,7 @@
 Current MVP includes:
 
 - Next.js App Router scaffold with TypeScript and TailwindCSS
-- Prisma schema for PostgreSQL
+- Prisma schema for SQLite (local-first)
 - Seed/demo purchase data
 - Dashboard + Purchases UI powered by seeded data
 - Gmail OAuth + sync API with demo fallback mode
@@ -17,7 +17,7 @@ Current MVP includes:
 - TypeScript
 - TailwindCSS
 - Prisma ORM
-- PostgreSQL (Neon-compatible)
+- SQLite (local file)
 
 ## Quick Start
 
@@ -33,18 +33,22 @@ npm install
 copy .env.example .env
 ```
 
-3. Set `DATABASE_URL` in `.env` to your Neon/Postgres connection string.
+3. Ensure `.env` has:
+
+```bash
+DATABASE_URL="file:./dev.db"
+```
 
 4. Run Prisma migration:
 
 ```bash
-npm run db:migrate -- --name init
+npx prisma migrate dev
 ```
 
 5. Seed demo data:
 
 ```bash
-npm run db:seed
+npm run seed
 ```
 
 6. Start app:
@@ -92,7 +96,7 @@ Use this flow for hackathon demos even when Gmail and OpenAI are not configured.
 
 1. Set only `DATABASE_URL` in `.env`.
 2. Run migrations and start app:
-   - `npm run db:migrate -- --name init`
+   - `npx prisma migrate dev`
    - `npm run dev`
 3. Open `/dashboard`:
    - Demo data auto-loads if there are no purchases.
@@ -120,5 +124,6 @@ Demo includes:
 - `npm run dev` - Start development server
 - `npm run build` - Production build
 - `npm run start` - Start production server
-- `npm run db:migrate -- --name init` - Create/apply migration
-- `npm run db:seed` - Seed demo data
+- `npm run seed` - Seed demo data
+- `npm run db:migrate -- --name <name>` - Create/apply migration
+- `npm run db:generate` - Generate Prisma client

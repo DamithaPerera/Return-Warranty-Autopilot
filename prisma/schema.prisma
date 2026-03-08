@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 enum PurchaseSource {
@@ -99,7 +99,7 @@ model Purchase {
   orderDate           DateTime
   deliveryDate        DateTime?
   currency            String
-  totalAmount         Decimal        @db.Decimal(10, 2)
+  totalAmount         Decimal
   purchaseSource      PurchaseSource
   extractedConfidence Float
   status              PurchaseStatus @default(ACTIVE)
@@ -119,7 +119,7 @@ model PurchaseItem {
   purchaseId       String
   productName      String
   quantity         Int      @default(1)
-  unitPrice        Decimal  @db.Decimal(10, 2)
+  unitPrice        Decimal
   warrantyMonths   Int?
   returnWindowDays Int?
   returnDeadline   DateTime?
