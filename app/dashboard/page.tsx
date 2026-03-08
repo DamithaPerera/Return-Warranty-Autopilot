@@ -1,5 +1,6 @@
 import { PurchasesTable } from "@/components/purchases-table";
 import { StatCard } from "@/components/stat-card";
+import { LoadDemoDataButton } from "@/components/load-demo-data-button";
 import { getDashboardStats, getPurchases } from "@/lib/db/queries";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,9 @@ export default async function DashboardPage() {
         <p className="mt-1 text-sm text-slate-600">
           Track purchase returns and warranties from extracted receipt data.
         </p>
+        <div className="mt-4">
+          <LoadDemoDataButton />
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

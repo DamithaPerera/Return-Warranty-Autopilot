@@ -86,6 +86,35 @@ When `/api/gmail/sync` runs, the app executes:
 - `POST /api/purchases/[id]/recalculate`
 - `POST /api/claims/generate`
 
+## Demo Instructions
+
+Use this flow for hackathon demos even when Gmail and OpenAI are not configured.
+
+1. Set only `DATABASE_URL` in `.env`.
+2. Run migrations and start app:
+   - `npm run db:migrate -- --name init`
+   - `npm run dev`
+3. Open `/dashboard`:
+   - Demo data auto-loads if there are no purchases.
+   - You can re-load/reset demo content anytime with `Load Demo Data`.
+4. Open `/connect/gmail` and click `Sync Emails`:
+   - Works in demo mode without Gmail credentials.
+5. Open any purchase and click `Generate Claim`:
+   - Falls back to template generation when `OPENAI_API_KEY` is missing.
+
+Demo includes:
+
+- Demo purchases
+- Demo email dataset
+- Demo extraction results (merchant/order/item fields + confidence)
+- Demo generated claims
+
+### Screenshots
+
+![Dashboard Demo](docs/screenshots/dashboard-demo.svg)
+![Gmail Demo](docs/screenshots/gmail-demo.svg)
+![Claim Demo](docs/screenshots/claim-demo.svg)
+
 ## Scripts
 
 - `npm run dev` - Start development server

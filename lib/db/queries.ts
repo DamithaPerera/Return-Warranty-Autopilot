@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db/prisma";
+import { ensureDemoDataLoaded } from "@/lib/demo/load";
 
 export async function getDashboardStats() {
+  await ensureDemoDataLoaded();
   const [totalPurchases, returnItems, activeWarranties, expiredReturns] = await Promise.all([
     prisma.purchase.count(),
     prisma.purchaseItem.count({
@@ -36,6 +38,7 @@ export async function getDashboardStats() {
 }
 
 export async function getPurchases() {
+  await ensureDemoDataLoaded();
   return prisma.purchase.findMany({
     orderBy: { orderDate: "desc" },
     include: {
@@ -47,6 +50,7 @@ export async function getPurchases() {
 }
 
 export async function getPurchaseById(id: string) {
+  await ensureDemoDataLoaded();
   return prisma.purchase.findUnique({
     where: { id },
     include: {

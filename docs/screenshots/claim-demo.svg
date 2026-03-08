@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <rect width="1200" height="700" fill="#f8fafc"/>
+  <rect x="40" y="30" width="1120" height="56" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="70" y="66" font-family="Arial, sans-serif" font-size="22" fill="#0f172a">Purchase Detail - Generate Claim</text>
+  <rect x="40" y="110" width="1120" height="520" rx="12" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="60" y="150" font-family="Arial, sans-serif" font-size="14" fill="#334155">Claim Type: refund_request</text>
+  <text x="320" y="150" font-family="Arial, sans-serif" font-size="14" fill="#334155">Tone: professional</text>
+  <rect x="540" y="130" width="130" height="34" rx="8" fill="#1d4ed8"/>
+  <text x="562" y="152" font-family="Arial, sans-serif" font-size="13" fill="#ffffff">Generate Claim</text>
+  <text x="60" y="200" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Subject</text>
+  <rect x="60" y="210" width="1040" height="40" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="75" y="236" font-family="Arial, sans-serif" font-size="13" fill="#334155">Refund Request - Order W892401455</text>
+  <text x="60" y="280" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Email Body</text>
+  <rect x="60" y="290" width="1040" height="250" rx="8" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="75" y="320" font-family="Arial, sans-serif" font-size="13" fill="#334155">Hello Support Team,</text>
+  <text x="75" y="345" font-family="Arial, sans-serif" font-size="13" fill="#334155">I would like to request a refund for order W892401455...</text>
+  <rect x="60" y="560" width="150" height="34" rx="8" fill="#ffffff" stroke="#94a3b8"/>
+  <text x="84" y="582" font-family="Arial, sans-serif" font-size="13" fill="#334155">Copy to clipboard</text>
+</svg>
