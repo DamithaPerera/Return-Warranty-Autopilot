@@ -30,9 +30,9 @@ enum EmailProvider {
 }
 
 enum ClaimType {
-  RETURN_REFUND
-  WARRANTY_REPAIR
-  WARRANTY_REPLACEMENT
+  RETURN_REQUEST
+  REFUND_REQUEST
+  WARRANTY_CLAIM
 }
 
 enum ClaimStatus {

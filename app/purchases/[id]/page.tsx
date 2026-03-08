@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/status-badge";
 import { getPurchaseById } from "@/lib/db/queries";
 import { formatCurrency, formatDate, getReturnStatus, getWarrantyStatus } from "@/lib/deadlines/status";
+import { ClaimGenerator } from "@/app/purchases/[id]/claim-generator";
 
 type PurchaseDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -79,6 +80,19 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
           </tbody>
         </table>
       </div>
+
+      <ClaimGenerator
+        purchaseId={purchase.id}
+        initialClaim={
+          purchase.generatedClaims[0]
+            ? {
+                subject: purchase.generatedClaims[0].subject,
+                body: purchase.generatedClaims[0].body,
+                mode: "stored"
+              }
+            : null
+        }
+      />
     </section>
   );
 }

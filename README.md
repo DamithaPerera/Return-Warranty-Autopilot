@@ -8,6 +8,7 @@ Current MVP includes:
 - Dashboard + Purchases UI powered by seeded data
 - Gmail OAuth + sync API with demo fallback mode
 - Purchase email classification + AI extraction pipeline (with mock fallback)
+- Deadline recalculation engine + claim generator (AI/template fallback)
 - Basic API route handlers
 
 ## Tech Stack
@@ -79,6 +80,11 @@ When `/api/gmail/sync` runs, the app executes:
    - `other`
 3. Purchase extraction (OpenAI when `OPENAI_API_KEY` exists, mock extraction otherwise)
 4. Persistence into `Purchase` and `PurchaseItem`
+
+## Phase 4 APIs
+
+- `POST /api/purchases/[id]/recalculate`
+- `POST /api/claims/generate`
 
 ## Scripts
 
