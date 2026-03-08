@@ -7,6 +7,7 @@ Current MVP includes:
 - Seed/demo purchase data
 - Dashboard + Purchases UI powered by seeded data
 - Gmail OAuth + sync API with demo fallback mode
+- Purchase email classification + AI extraction pipeline (with mock fallback)
 - Basic API route handlers
 
 ## Tech Stack
@@ -65,6 +66,19 @@ If `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_SECRET` is missing, Gmail runs in demo m
 - Connect action will mark a demo Gmail account
 - Sync action will load sample emails
 - HTML email bodies are normalized to plain text for downstream extraction
+
+## Extraction Pipeline
+
+When `/api/gmail/sync` runs, the app executes:
+
+1. Email sync
+2. Rule-based classification:
+   - `purchase_confirmation`
+   - `shipping_update`
+   - `invoice`
+   - `other`
+3. Purchase extraction (OpenAI when `OPENAI_API_KEY` exists, mock extraction otherwise)
+4. Persistence into `Purchase` and `PurchaseItem`
 
 ## Scripts
 

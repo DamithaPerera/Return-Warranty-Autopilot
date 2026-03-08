@@ -1,5 +1,4 @@
 import {
-  EmailClassification,
   EmailProvider,
   ExtractionStatus,
   PrismaClient,
@@ -62,7 +61,7 @@ async function main() {
       receivedAt: addDays(now, -3),
       rawText: "Your package is on the way. Thanks for shopping with us.",
       htmlBody: "<p>Your package is on the way.</p>",
-      classification: EmailClassification.SHIPPING,
+      classification: "shipping_update",
       extractionStatus: ExtractionStatus.PROCESSED
     }
   });

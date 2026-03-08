@@ -1,4 +1,4 @@
-import { EmailClassification, EmailProvider, ExtractionStatus, Prisma } from "@prisma/client";
+import { EmailProvider, ExtractionStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import {
   getGoogleClientId,
@@ -9,6 +9,7 @@ import {
 } from "@/lib/gmail/config";
 import { demoEmails } from "@/lib/gmail/demo";
 import { htmlToPlainText } from "@/lib/gmail/html";
+import { classifyPurchaseEmail } from "@/lib/parser/classifier";
 
 const DEMO_USER_EMAIL = "demo@autopilot.app";
 
@@ -92,20 +93,6 @@ function extractBodies(message: GmailMessageFullResponse): { htmlBody: string; r
 
   const normalized = rawText || (htmlBody ? htmlToPlainText(htmlBody) : "");
   return { htmlBody, rawText: normalized };
-}
-
-function classifyEmail(subject: string, snippet: string, fromEmail: string) {
-  const haystack = `${subject} ${snippet} ${fromEmail}`.toLowerCase();
-  if (haystack.includes("receipt") || haystack.includes("order") || haystack.includes("invoice")) {
-    return EmailClassification.RECEIPT;
-  }
-  if (haystack.includes("warranty")) {
-    return EmailClassification.WARRANTY;
-  }
-  if (haystack.includes("shipped") || haystack.includes("delivery") || haystack.includes("tracking")) {
-    return EmailClassification.SHIPPING;
-  }
-  return EmailClassification.OTHER;
 }
 
 async function ensureDemoUser() {
@@ -333,7 +320,7 @@ function toEmailCreateInput(
     receivedAt: data.receivedAt,
     rawText: data.rawText,
     htmlBody: data.htmlBody,
-    classification: classifyEmail(data.subject, data.snippet, data.fromEmail),
+    classification: classifyPurchaseEmail(data.subject, data.fromEmail, data.snippet),
     extractionStatus: ExtractionStatus.PROCESSED
   };
 }

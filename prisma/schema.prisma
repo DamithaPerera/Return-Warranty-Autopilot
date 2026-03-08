@@ -29,13 +29,6 @@ enum EmailProvider {
   GMAIL
 }
 
-enum EmailClassification {
-  RECEIPT
-  WARRANTY
-  SHIPPING
-  OTHER
-}
-
 enum ClaimType {
   RETURN_REFUND
   WARRANTY_REPAIR
@@ -87,7 +80,7 @@ model EmailMessage {
   receivedAt      DateTime
   rawText         String?
   htmlBody        String?
-  classification  EmailClassification @default(OTHER)
+  classification  String              @default("other")
   extractionStatus ExtractionStatus   @default(PENDING)
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt

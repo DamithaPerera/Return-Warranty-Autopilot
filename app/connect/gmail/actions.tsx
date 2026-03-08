@@ -11,12 +11,25 @@ export function GmailActions() {
     setResult("");
     try {
       const response = await fetch("/api/gmail/sync", { method: "POST" });
-      const data = (await response.json()) as { storedCount?: number; mode?: string; error?: string };
+      const data = (await response.json()) as {
+        storedCount?: number;
+        mode?: string;
+        error?: string;
+        extraction?: {
+          classifiedCount: number;
+          extractedCount: number;
+          savedPurchaseCount: number;
+          mockExtractions: number;
+        } | null;
+      };
       if (!response.ok) {
         setResult(data.error ?? "Sync failed");
         return;
       }
-      setResult(`Synced ${data.storedCount ?? 0} emails (${data.mode ?? "unknown"} mode).`);
+      const extractionSummary = data.extraction
+        ? ` Classified ${data.extraction.classifiedCount}, extracted ${data.extraction.extractedCount}, saved ${data.extraction.savedPurchaseCount} purchases.`
+        : "";
+      setResult(`Synced ${data.storedCount ?? 0} emails (${data.mode ?? "unknown"} mode).${extractionSummary}`);
     } catch {
       setResult("Sync failed due to network or server error.");
     } finally {
