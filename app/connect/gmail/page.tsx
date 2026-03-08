@@ -13,14 +13,14 @@ export default async function ConnectGmailPage() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Connect Gmail</h1>
+      <div className="rounded-2xl bg-white/80 p-6 shadow-lg shadow-slate-900/5 ring-1 ring-slate-200">
+        <h1 className="text-3xl font-bold text-slate-900">Connect Gmail</h1>
         <p className="mt-1 text-sm text-slate-600">
           Connect an inbox and sync recent emails for receipt/warranty extraction.
         </p>
       </div>
 
-      <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <article className="glass-card rounded-2xl p-5">
         <div className="grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
           <p>
             <span className="font-medium text-slate-900">Connected:</span> {status.connected ? "Yes" : "No"}
@@ -41,8 +41,8 @@ export default async function ConnectGmailPage() {
         </div>
       </article>
 
-      <article className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-4 py-3">
+      <article className="glass-card overflow-hidden rounded-2xl">
+        <div className="border-b border-slate-200 bg-gradient-to-r from-cyan-50 to-blue-50 px-4 py-3">
           <h2 className="text-sm font-semibold text-slate-900">Recent Synced Emails</h2>
         </div>
         <table className="min-w-full divide-y divide-slate-200">

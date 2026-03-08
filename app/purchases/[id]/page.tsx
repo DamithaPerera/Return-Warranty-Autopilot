@@ -21,15 +21,15 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{purchase.merchantName}</h1>
+          <h1 className="text-3xl font-bold text-slate-900">{purchase.merchantName}</h1>
           <p className="mt-1 text-sm text-slate-600">Order #{purchase.orderNumber}</p>
         </div>
-        <Link href="/purchases" className="text-sm font-medium text-brand-700 hover:text-brand-500">
+        <Link href="/purchases" className="text-sm font-semibold text-cyan-700 hover:text-cyan-500">
           Back to purchases
         </Link>
       </div>
 
-      <article className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-2">
+      <article className="glass-card grid gap-4 rounded-2xl p-5 sm:grid-cols-2">
         <p className="text-sm text-slate-600">
           <span className="font-medium text-slate-900">Order Date:</span> {formatDate(purchase.orderDate)}
         </p>
@@ -46,9 +46,9 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
         </p>
       </article>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="glass-card overflow-hidden rounded-2xl">
         <table className="min-w-full divide-y divide-slate-200">
-          <thead className="bg-slate-50">
+          <thead className="bg-gradient-to-r from-cyan-50 to-blue-50">
             <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
               <th className="px-4 py-3">Item</th>
               <th className="px-4 py-3">Qty</th>
@@ -62,7 +62,7 @@ export default async function PurchaseDetailPage({ params }: PurchaseDetailPageP
               const returnStatus = getReturnStatus(item.returnDeadline);
               const warrantyStatus = getWarrantyStatus(item.warrantyDeadline);
               return (
-                <tr key={item.id}>
+                <tr key={item.id} className="transition hover:bg-cyan-50/40">
                   <td className="px-4 py-3 font-medium text-slate-800">{item.productName}</td>
                   <td className="px-4 py-3 text-slate-600">{item.quantity}</td>
                   <td className="px-4 py-3 text-slate-600">

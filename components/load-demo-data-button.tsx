@@ -33,11 +33,11 @@ export function LoadDemoDataButton() {
         type="button"
         onClick={handleLoadDemoData}
         disabled={loading}
-        className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+        className="rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-700/20 hover:brightness-110 disabled:opacity-60"
       >
         {loading ? "Loading..." : "Load Demo Data"}
       </button>
-      {message ? <p className="text-xs text-slate-500">{message}</p> : null}
+      {message ? <p className="text-xs font-medium text-slate-600">{message}</p> : null}
     </div>
   );
 }

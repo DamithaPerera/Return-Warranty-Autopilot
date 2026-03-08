@@ -54,7 +54,7 @@ export function GmailActions() {
     <div className="flex flex-wrap items-center gap-3">
       <a
         href="/api/gmail/auth/start"
-        className="rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500"
+        className="rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-700/20 hover:brightness-110"
       >
         Connect Gmail
       </a>
@@ -62,11 +62,11 @@ export function GmailActions() {
         type="button"
         onClick={handleSync}
         disabled={syncing}
-        className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {syncing ? "Syncing..." : "Sync Emails"}
       </button>
-      {result ? <p className="text-sm text-slate-600">{result}</p> : null}
+      {result ? <p className="text-sm font-medium text-slate-600">{result}</p> : null}
     </div>
   );
 }

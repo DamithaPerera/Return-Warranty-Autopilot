@@ -59,7 +59,7 @@ export function ClaimGenerator({ purchaseId, initialClaim }: ClaimGeneratorProps
   }
 
   return (
-    <article className="space-y-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="glass-card space-y-4 rounded-2xl p-5">
       <div className="flex flex-wrap items-end gap-3">
         <label className="text-sm text-slate-600">
           Claim Type
@@ -68,7 +68,7 @@ export function ClaimGenerator({ purchaseId, initialClaim }: ClaimGeneratorProps
             onChange={(event) =>
               setClaimType(event.target.value as "return_request" | "refund_request" | "warranty_claim")
             }
-            className="mt-1 block rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800"
+            className="mt-1 block rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-cyan-500 focus:outline-none"
           >
             <option value="return_request">return_request</option>
             <option value="refund_request">refund_request</option>
@@ -80,14 +80,14 @@ export function ClaimGenerator({ purchaseId, initialClaim }: ClaimGeneratorProps
           <input
             value={tone}
             onChange={(event) => setTone(event.target.value)}
-            className="mt-1 block rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800"
+            className="mt-1 block rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-cyan-500 focus:outline-none"
           />
         </label>
         <button
           type="button"
           onClick={handleGenerate}
           disabled={loading}
-          className="rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-500 disabled:opacity-60"
+          className="rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-700/20 hover:brightness-110 disabled:opacity-60"
         >
           {loading ? "Generating..." : "Generate Claim"}
         </button>
@@ -103,7 +103,7 @@ export function ClaimGenerator({ purchaseId, initialClaim }: ClaimGeneratorProps
             <input
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800"
+              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-cyan-500 focus:outline-none"
             />
           </label>
           <label className="block text-sm text-slate-600">
@@ -112,13 +112,13 @@ export function ClaimGenerator({ purchaseId, initialClaim }: ClaimGeneratorProps
               value={body}
               onChange={(event) => setBody(event.target.value)}
               rows={10}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800"
+              className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-cyan-500 focus:outline-none"
             />
           </label>
           <button
             type="button"
             onClick={handleCopy}
-            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             Copy to clipboard
           </button>

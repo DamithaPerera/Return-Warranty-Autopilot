@@ -10,9 +10,9 @@ export default async function DashboardPage() {
 
   return (
     <section className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-600">
+      <div className="rounded-2xl bg-gradient-to-r from-cyan-600 to-blue-600 p-6 text-white shadow-xl shadow-blue-900/20">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <p className="mt-1 text-sm text-cyan-50">
           Track purchase returns and warranties from extracted receipt data.
         </p>
         <div className="mt-4">
@@ -28,7 +28,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-900">Recent Purchases</h2>
+        <h2 className="text-lg font-bold text-slate-900">Recent Purchases</h2>
         <PurchasesTable purchases={purchases} />
       </div>
     </section>
