@@ -28,6 +28,17 @@ export default function RootLayout({
                   Purchases
                 </Link>
                 <EmailNavDropdown />
+                <span className="group relative inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-slate-500">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+                    <path d="M5 7h14v10H5z" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M5 10h14" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M8 14h4" stroke="currentColor" strokeWidth="1.5" />
+                  </svg>
+                  <span className="font-semibold">Subscription</span>
+                  <span className="pointer-events-none absolute -bottom-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white opacity-0 shadow transition group-hover:opacity-100">
+                    Coming soon
+                  </span>
+                </span>
               </nav>
             </div>
           </header>
