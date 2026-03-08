@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { EmailNavDropdown } from "@/components/email-nav-dropdown";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,9 +27,7 @@ export default function RootLayout({
                 <Link href="/purchases" className="rounded-full px-3 py-1.5 hover:bg-cyan-50 hover:text-cyan-800">
                   Purchases
                 </Link>
-                <Link href="/connect/gmail" className="rounded-full px-3 py-1.5 hover:bg-cyan-50 hover:text-cyan-800">
-                  Gmail
-                </Link>
+                <EmailNavDropdown />
               </nav>
             </div>
           </header>
