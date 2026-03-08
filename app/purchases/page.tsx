@@ -5,6 +5,18 @@ export const dynamic = "force-dynamic";
 
 export default async function PurchasesPage() {
   const purchases = await getPurchases();
+  const tablePurchases = purchases.map((purchase) => ({
+    id: purchase.id,
+    merchantName: purchase.merchantName,
+    orderNumber: purchase.orderNumber,
+    orderDate: purchase.orderDate.toISOString(),
+    currency: purchase.currency,
+    totalAmount: Number(purchase.totalAmount),
+    items: purchase.items.map((item) => ({
+      id: item.id,
+      returnDeadline: item.returnDeadline ? item.returnDeadline.toISOString() : null
+    }))
+  }));
 
   return (
     <section className="space-y-6">
@@ -12,7 +24,7 @@ export default async function PurchasesPage() {
         <h1 className="text-3xl font-bold text-slate-900">Purchases</h1>
         <p className="mt-1 text-sm text-slate-600">All tracked orders from receipt extraction.</p>
       </div>
-      <PurchasesTable purchases={purchases} />
+      <PurchasesTable purchases={tablePurchases} />
     </section>
   );
 }

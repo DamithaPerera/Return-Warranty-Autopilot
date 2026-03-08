@@ -7,6 +7,18 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   const [stats, purchases] = await Promise.all([getDashboardStats(), getPurchases()]);
+  const tablePurchases = purchases.map((purchase) => ({
+    id: purchase.id,
+    merchantName: purchase.merchantName,
+    orderNumber: purchase.orderNumber,
+    orderDate: purchase.orderDate.toISOString(),
+    currency: purchase.currency,
+    totalAmount: Number(purchase.totalAmount),
+    items: purchase.items.map((item) => ({
+      id: item.id,
+      returnDeadline: item.returnDeadline ? item.returnDeadline.toISOString() : null
+    }))
+  }));
 
   return (
     <section className="space-y-8">
@@ -29,7 +41,7 @@ export default async function DashboardPage() {
 
       <div className="space-y-3">
         <h2 className="text-lg font-bold text-slate-900">Recent Purchases</h2>
-        <PurchasesTable purchases={purchases} />
+        <PurchasesTable purchases={tablePurchases} />
       </div>
     </section>
   );
